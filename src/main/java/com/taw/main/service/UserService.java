@@ -1,28 +1,40 @@
 package com.taw.main.service;
 
+import com.taw.main.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 public class UserService {
 
-    private final Map<String, String> users = new HashMap<>();
+    @Autowired
+    public UserRepository userRepository;
+
+    @Autowired
+    public BCryptPasswordEncoder passwordEncoder;
 
     public void register(UserDTO userDto) {
-        if (users.containsKey(userDto.getUsername())) {
+        if (userRepository.existsById(userDto.getId())) {
             throw new RuntimeException("Пользователь уже существует");
         }
-        users.put(userDto.getUsername(), userDto.getPassword());
+        userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        userDto.setUsername(userDto.getUsername());
+        userRepository.save(userDto);
     }
 
     public void login(UserDTO userDto) {
-        if (!users.containsKey(userDto.getUsername())) {
+        if (!userRepository.existsById(userDto.getId())) {
             throw new RuntimeException("Пользователь не найден");
         }
-        if (!users.get(userDto.getUsername()).equals(userDto.getPassword())) {
+        if (checkPass(userDto)) {
             throw new RuntimeException("Неверный пароль");
         }
+    }
+
+    public boolean checkPass(UserDTO userDTO){
+        return userRepository.findById(userDTO.getId())
+                .map(user -> passwordEncoder.matches(userDTO.getPassword(), user.getPassword())) // Проверка хэша
+                .orElse(false);
     }
 }

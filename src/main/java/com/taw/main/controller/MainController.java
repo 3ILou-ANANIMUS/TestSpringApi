@@ -18,7 +18,6 @@ public class MainController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody UserDTO userDto) {
-        System.out.println(userDto);
         try {
             userService.register(userDto);
             return ResponseEntity.ok("Регистрация успешна");
@@ -29,7 +28,6 @@ public class MainController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserDTO userDto) {
-        System.out.println(userDto);
         try {
             userService.login(userDto);
             return ResponseEntity.ok("Вход выполнен");
